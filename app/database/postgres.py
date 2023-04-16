@@ -34,7 +34,8 @@ async def get_items_from_database(item_ids: List[str]) -> List[InventoryItem]:
             description=row['description'],
             brand=row['brand'],
             currentInventory=row['currentinventory'],
-            id=row['id']
+            id=row['id'],
+            user_name=row['user_name']
         )
         items.append(item)
 
@@ -57,3 +58,38 @@ async def insert_item_into_database(item: InventoryItem) -> None:
 
     # close database connection
     await conn.close()
+
+async def get_items_by_user(user_name: str) -> List[InventoryItem]:
+    # set up database connection
+    print("connecting to database")
+    conn = await asyncpg.connect(user=settings.POSTGRES_USER, password=settings.POSTGRES_PASSWORD,
+                                  database=settings.POSTGRES_DB, host=settings.POSTGRES_HOST, port=settings.POSTGRES_PORT)
+
+    # execute SQL query to retrieve items for the given user name
+    print("running query")
+    query = 'SELECT * FROM inventoryitem WHERE user_name = $1'
+    rows = await conn.fetch(query, user_name)
+
+    # close database connection
+    await conn.close()
+
+    # if no items found, return empty list
+    if not rows:
+        return []
+
+    # create and return list of InventoryItem objects
+    items = []
+    for row in rows:
+        item = InventoryItem(
+            name=row['name'],
+            price=row['price'],
+            image=row['image'],
+            description=row['description'],
+            brand=row['brand'],
+            currentInventory=row['currentinventory'],
+            id=row['id'],
+            user_name=row['user_name']
+        )
+        items.append(item)
+
+    return items

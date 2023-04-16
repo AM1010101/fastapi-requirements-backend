@@ -8,3 +8,4 @@ class InventoryItem(BaseModel):
     brand: str
     currentInventory: int
     id: str
+    user_name: str
